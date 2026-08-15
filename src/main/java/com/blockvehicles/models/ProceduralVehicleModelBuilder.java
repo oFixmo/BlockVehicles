@@ -22,66 +22,84 @@ public class ProceduralVehicleModelBuilder {
         float l = spec.getLength();
         float w = spec.getWidth();
         float h = spec.getHeight();
-        Material primary = spec.getPrimaryMaterial();
-        Material secondary = spec.getSecondaryMaterial();
-        Material glass = spec.getGlassMaterial();
+        Material p = spec.getPrimaryMaterial();
+        Material s = spec.getSecondaryMaterial();
+        Material g = spec.getGlassMaterial();
 
-        // -------------------------------------------------------------
-        // MOTORCYCLES & BIKES (NO GLASS - OPEN LEATHER SEAT & HANDLEBARS)
-        // -------------------------------------------------------------
-        if (spec.getCategory() == VehicleCategory.MOTORCYCLE) {
-            // Front & Rear Thin Wheels
-            parts.add(createPart(world, baseLoc, Material.COAL_BLOCK, new Vector3f(-0.1f, 0.0f, l * 0.32f), new Vector3f(0.2f, 0.65f, 0.65f)));
-            parts.add(createPart(world, baseLoc, Material.COAL_BLOCK, new Vector3f(-0.1f, 0.0f, -l * 0.32f), new Vector3f(0.2f, 0.65f, 0.65f)));
-            // Slender Bike Chassis / Fuel Tank
-            parts.add(createPart(world, baseLoc, primary, new Vector3f(-0.25f, 0.35f, -l * 0.30f), new Vector3f(0.5f, 0.45f, l * 0.60f)));
-            // Open Leather Driver Saddle
-            parts.add(createPart(world, baseLoc, Material.BLACK_WOOL, new Vector3f(-0.2f, 0.55f, -0.25f), new Vector3f(0.4f, 0.2f, 0.45f)));
-            // Metallic Handlebars
-            parts.add(createPart(world, baseLoc, Material.LIGHTNING_ROD, new Vector3f(-0.4f, 0.75f, l * 0.22f), new Vector3f(0.8f, 0.1f, 0.15f)));
-            // Headlight
-            parts.add(createPart(world, baseLoc, Material.SEA_LANTERN, new Vector3f(-0.15f, 0.55f, l * 0.38f), new Vector3f(0.3f, 0.3f, 0.1f)));
+        // -----------------------------------------------------------------
+        // 1. TRACTOR (Farm Vehicle - Big Rear Wheels, Sloped Hood, Exhaust)
+        // -----------------------------------------------------------------
+        if (spec.getId().contains("TRACTOR") || spec.getId().contains("HARVESTER") || spec.getId().contains("9RX")) {
+            // Front Small Wheels + Rims
+            parts.add(createPart(world, baseLoc, Material.COAL_BLOCK, new Vector3f(-w*0.5f, 0.0f, l*0.35f), new Vector3f(0.35f, 0.6f, 0.6f)));
+            parts.add(createPart(world, baseLoc, Material.SMOOTH_STONE_SLAB, new Vector3f(-w*0.52f, 0.15f, l*0.35f + 0.15f), new Vector3f(0.05f, 0.3f, 0.3f)));
+            parts.add(createPart(world, baseLoc, Material.COAL_BLOCK, new Vector3f(w*0.5f - 0.35f, 0.0f, l*0.35f), new Vector3f(0.35f, 0.6f, 0.6f)));
+            parts.add(createPart(world, baseLoc, Material.SMOOTH_STONE_SLAB, new Vector3f(w*0.5f - 0.03f, 0.15f, l*0.35f + 0.15f), new Vector3f(0.05f, 0.3f, 0.3f)));
+
+            // Rear Giant Heavy Wheels
+            parts.add(createPart(world, baseLoc, Material.BLACK_CONCRETE, new Vector3f(-w*0.55f, 0.0f, -l*0.30f), new Vector3f(0.5f, 1.2f, 1.2f)));
+            parts.add(createPart(world, baseLoc, Material.YELLOW_CONCRETE, new Vector3f(-w*0.57f, 0.35f, -l*0.30f + 0.35f), new Vector3f(0.05f, 0.5f, 0.5f)));
+            parts.add(createPart(world, baseLoc, Material.BLACK_CONCRETE, new Vector3f(w*0.55f - 0.5f, 0.0f, -l*0.30f), new Vector3f(0.5f, 1.2f, 1.2f)));
+            parts.add(createPart(world, baseLoc, Material.YELLOW_CONCRETE, new Vector3f(w*0.55f - 0.03f, 0.35f, -l*0.30f + 0.35f), new Vector3f(0.05f, 0.5f, 0.5f)));
+
+            // Sloped Engine Hood
+            parts.add(createPart(world, baseLoc, p, new Vector3f(-w*0.35f, 0.45f, 0.0f), new Vector3f(w*0.7f, 0.65f, l*0.48f)));
+            // Vertical Smoke Exhaust Pipe
+            parts.add(createPart(world, baseLoc, Material.ANVIL, new Vector3f(w*0.30f, 1.1f, l*0.25f), new Vector3f(0.2f, 0.9f, 0.2f)));
+            // High Driver Cabin & Roof
+            parts.add(createPart(world, baseLoc, Material.GLASS, new Vector3f(-w*0.38f, 1.0f, -l*0.32f), new Vector3f(w*0.76f, 0.8f, l*0.38f)));
+            parts.add(createPart(world, baseLoc, p, new Vector3f(-w*0.4f, 1.8f, -l*0.35f), new Vector3f(w*0.8f, 0.15f, l*0.42f)));
             return parts;
         }
 
-        // -------------------------------------------------------------
-        // CARS, TRUCKS & HEAVY VEHICLES (GLASS CABIN + INTERIOR SEAT)
-        // -------------------------------------------------------------
-        // 1. Lower Chassis Floor
-        parts.add(createPart(world, baseLoc, primary, new Vector3f(-w / 2f, 0.2f, -l / 2f), new Vector3f(w, 0.35f, l)));
-
-        // 2. Interior Driver Chair (Cushion, Backrest & Steering Column)
-        parts.add(createPart(world, baseLoc, Material.BLACK_WOOL, new Vector3f(-0.35f, 0.35f, -0.2f), new Vector3f(0.7f, 0.2f, 0.5f)));
-        parts.add(createPart(world, baseLoc, Material.BLACK_CONCRETE, new Vector3f(-0.35f, 0.55f, -0.45f), new Vector3f(0.7f, 0.65f, 0.15f)));
-        parts.add(createPart(world, baseLoc, Material.LEVER, new Vector3f(-0.15f, 0.55f, 0.15f), new Vector3f(0.3f, 0.3f, 0.1f)));
-
-        // 3. Glass Windshields & Windows
-        if (glass != Material.AIR) {
-            parts.add(createPart(world, baseLoc, glass, new Vector3f(-w * 0.42f, 0.55f, l * 0.12f), new Vector3f(w * 0.84f, h * 0.55f, 0.15f)));
-            parts.add(createPart(world, baseLoc, glass, new Vector3f(-w * 0.45f, 0.55f, -l * 0.22f), new Vector3f(0.12f, h * 0.55f, l * 0.35f)));
-            parts.add(createPart(world, baseLoc, glass, new Vector3f(w * 0.45f - 0.12f, 0.55f, -l * 0.22f), new Vector3f(0.12f, h * 0.55f, l * 0.35f)));
-            parts.add(createPart(world, baseLoc, glass, new Vector3f(-w * 0.42f, 0.55f, -l * 0.23f), new Vector3f(w * 0.84f, h * 0.55f, 0.15f)));
-            parts.add(createPart(world, baseLoc, glass, new Vector3f(-w * 0.42f, 0.55f + h * 0.55f, -l * 0.22f), new Vector3f(w * 0.84f, 0.1f, l * 0.35f)));
+        // -----------------------------------------------------------------
+        // 2. MOTORCYCLES & BIKES (Dual Inline Wheels, Spoke Rims, Handlebars)
+        // -----------------------------------------------------------------
+        if (spec.getCategory() == VehicleCategory.MOTORCYCLE) {
+            // Front Wheel + Rim
+            parts.add(createPart(world, baseLoc, Material.COAL_BLOCK, new Vector3f(-0.1f, 0.0f, l*0.32f), new Vector3f(0.2f, 0.65f, 0.65f)));
+            parts.add(createPart(world, baseLoc, Material.IRON_BLOCK, new Vector3f(-0.11f, 0.18f, l*0.32f + 0.18f), new Vector3f(0.22f, 0.3f, 0.3f)));
+            // Rear Wheel + Rim
+            parts.add(createPart(world, baseLoc, Material.COAL_BLOCK, new Vector3f(-0.1f, 0.0f, -l*0.32f), new Vector3f(0.2f, 0.65f, 0.65f)));
+            parts.add(createPart(world, baseLoc, Material.IRON_BLOCK, new Vector3f(-0.11f, 0.18f, -l*0.32f + 0.18f), new Vector3f(0.22f, 0.3f, 0.3f)));
+            // Slender Chassis / Engine
+            parts.add(createPart(world, baseLoc, p, new Vector3f(-0.2f, 0.35f, -l*0.25f), new Vector3f(0.4f, 0.4f, l*0.55f)));
+            parts.add(createPart(world, baseLoc, Material.POLISHED_BLACKSTONE_SLAB, new Vector3f(-0.18f, 0.65f, -0.2f), new Vector3f(0.36f, 0.15f, 0.45f)));
+            // Handlebars & Headlight
+            parts.add(createPart(world, baseLoc, Material.LIGHTNING_ROD, new Vector3f(-0.35f, 0.8f, l*0.20f), new Vector3f(0.7f, 0.1f, 0.1f)));
+            parts.add(createPart(world, baseLoc, Material.SEA_LANTERN, new Vector3f(-0.12f, 0.55f, l*0.38f), new Vector3f(0.24f, 0.24f, 0.1f)));
+            return parts;
         }
 
-        // 4. Outer Body Hood & Trunk
-        parts.add(createPart(world, baseLoc, primary, new Vector3f(-w / 2f, 0.45f, l * 0.15f), new Vector3f(w, h * 0.35f, l * 0.35f)));
-        parts.add(createPart(world, baseLoc, primary, new Vector3f(-w / 2f, 0.45f, -l / 2f), new Vector3f(w, h * 0.35f, l * 0.28f)));
+        // -----------------------------------------------------------------
+        // 3. CARS, SUPERCARS & TRUCKS (Aerodynamic Multi-Layer + Glass Cabin)
+        // -----------------------------------------------------------------
+        // Lower Aerodynamic Splitter / Base
+        parts.add(createPart(world, baseLoc, s, new Vector3f(-w/2f, 0.18f, -l/2f), new Vector3f(w, 0.12f, l)));
+        // Main Body Core
+        parts.add(createPart(world, baseLoc, p, new Vector3f(-w*0.48f, 0.30f, -l*0.48f), new Vector3f(w*0.96f, h*0.38f, l*0.96f)));
+        // 3D Glass Cabin
+        parts.add(createPart(world, baseLoc, g, new Vector3f(-w*0.42f, 0.58f, l*0.10f), new Vector3f(w*0.84f, h*0.48f, 0.15f)));
+        parts.add(createPart(world, baseLoc, g, new Vector3f(-w*0.44f, 0.58f, -l*0.22f), new Vector3f(0.12f, h*0.48f, l*0.32f)));
+        parts.add(createPart(world, baseLoc, g, new Vector3f(w*0.44f - 0.12f, 0.58f, -l*0.22f), new Vector3f(0.12f, h*0.48f, l*0.32f)));
+        parts.add(createPart(world, baseLoc, g, new Vector3f(-w*0.42f, 0.58f, -l*0.23f), new Vector3f(w*0.84f, h*0.48f, 0.15f)));
+        parts.add(createPart(world, baseLoc, p, new Vector3f(-w*0.42f, 0.58f + h*0.48f, -l*0.22f), new Vector3f(w*0.84f, 0.08f, l*0.32f)));
 
-        // 5. Wheels or Wings
-        if (spec.isFlying()) {
-            parts.add(createPart(world, baseLoc, secondary, new Vector3f(-w * 1.6f, 0.6f, -l * 0.1f), new Vector3f(w * 3.2f, 0.15f, l * 0.35f)));
-            parts.add(createPart(world, baseLoc, Material.IRON_BARS, new Vector3f(-w * 0.6f, h + 0.4f, 0.0f), new Vector3f(w * 1.2f, 0.1f, l * 0.7f)));
-        } else {
-            parts.add(createPart(world, baseLoc, Material.COAL_BLOCK, new Vector3f(-w / 2f - 0.15f, 0.0f, l * 0.24f), new Vector3f(0.35f, 0.65f, 0.65f)));
-            parts.add(createPart(world, baseLoc, Material.COAL_BLOCK, new Vector3f(w / 2f - 0.20f, 0.0f, l * 0.24f), new Vector3f(0.35f, 0.65f, 0.65f)));
-            parts.add(createPart(world, baseLoc, Material.COAL_BLOCK, new Vector3f(-w / 2f - 0.15f, 0.0f, -l * 0.30f), new Vector3f(0.35f, 0.65f, 0.65f)));
-            parts.add(createPart(world, baseLoc, Material.COAL_BLOCK, new Vector3f(w / 2f - 0.20f, 0.0f, -l * 0.30f), new Vector3f(0.35f, 0.65f, 0.65f)));
+        // 4 Custom Wheels with Inner Metal Hub Rims
+        float[] xSides = {-w/2f - 0.12f, w/2f - 0.24f};
+        float[] zAxles = {l*0.24f, -l*0.28f};
+        for (float x : xSides) {
+            for (float z : zAxles) {
+                parts.add(createPart(world, baseLoc, Material.COAL_BLOCK, new Vector3f(x, 0.0f, z), new Vector3f(0.36f, 0.68f, 0.68f)));
+                float rimX = (x < 0) ? x - 0.02f : x + 0.32f;
+                parts.add(createPart(world, baseLoc, Material.SMOOTH_STONE_SLAB, new Vector3f(rimX, 0.18f, z + 0.18f), new Vector3f(0.04f, 0.32f, 0.32f)));
+            }
         }
 
-        // Headlights
-        parts.add(createPart(world, baseLoc, Material.SEA_LANTERN, new Vector3f(-w * 0.4f, 0.35f, l / 2f - 0.05f), new Vector3f(0.25f, 0.25f, 0.1f)));
-        parts.add(createPart(world, baseLoc, Material.SEA_LANTERN, new Vector3f(w * 0.4f - 0.25f, 0.35f, l / 2f - 0.05f), new Vector3f(0.25f, 0.25f, 0.1f)));
+        // Grille & Headlights
+        parts.add(createPart(world, baseLoc, Material.BLACK_CONCRETE, new Vector3f(-w*0.32f, 0.32f, l/2f - 0.02f), new Vector3f(w*0.64f, 0.22f, 0.04f)));
+        parts.add(createPart(world, baseLoc, Material.SEA_LANTERN, new Vector3f(-w*0.44f, 0.36f, l/2f - 0.02f), new Vector3f(0.24f, 0.18f, 0.04f)));
+        parts.add(createPart(world, baseLoc, Material.SEA_LANTERN, new Vector3f(w*0.44f - 0.24f, 0.36f, l/2f - 0.02f), new Vector3f(0.24f, 0.18f, 0.04f)));
 
         return parts;
     }
