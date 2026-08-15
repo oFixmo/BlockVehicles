@@ -1,0 +1,7 @@
+com/blockvehicles/vehicle/VehicleInstance.class
+com/blockvehicles/BlockVehiclesPlugin.class
+com/blockvehicles/vehicle/VehicleManager.class
+com/blockvehicles/registry/VehicleSpec.class
+com/blockvehicles/registry/VehicleCategory.class
+com/blockvehicles/items/CustomItemRegistry.class
+com/blockvehicles/physics/VehicleControllerTask.class

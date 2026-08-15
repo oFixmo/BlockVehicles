@@ -1,0 +1,16 @@
+/workspaces/BlockVehicles/src/main/java/com/blockvehicles/BlockVehiclesPlugin.java
+/workspaces/BlockVehicles/src/main/java/com/blockvehicles/commands/VehicleCommand.java
+/workspaces/BlockVehicles/src/main/java/com/blockvehicles/gui/VehicleCatalogGUI.java
+/workspaces/BlockVehicles/src/main/java/com/blockvehicles/gui/VehicleGUI.java
+/workspaces/BlockVehicles/src/main/java/com/blockvehicles/items/CustomItemRegistry.java
+/workspaces/BlockVehicles/src/main/java/com/blockvehicles/items/CustomItems.java
+/workspaces/BlockVehicles/src/main/java/com/blockvehicles/listeners/VehicleListener.java
+/workspaces/BlockVehicles/src/main/java/com/blockvehicles/models/ProceduralVehicleModelBuilder.java
+/workspaces/BlockVehicles/src/main/java/com/blockvehicles/models/VehicleModelBuilder.java
+/workspaces/BlockVehicles/src/main/java/com/blockvehicles/physics/VehicleControllerTask.java
+/workspaces/BlockVehicles/src/main/java/com/blockvehicles/registry/VehicleCategory.java
+/workspaces/BlockVehicles/src/main/java/com/blockvehicles/registry/VehicleRegistry.java
+/workspaces/BlockVehicles/src/main/java/com/blockvehicles/registry/VehicleSpec.java
+/workspaces/BlockVehicles/src/main/java/com/blockvehicles/vehicle/VehicleInstance.java
+/workspaces/BlockVehicles/src/main/java/com/blockvehicles/vehicle/VehicleManager.java
+/workspaces/BlockVehicles/src/main/java/com/blockvehicles/vehicle/VehicleType.java

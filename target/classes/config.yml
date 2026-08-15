@@ -1,0 +1,20 @@
+# BlockVehicles 2.0 Global Settings
+
+fuel_rates:
+  COAL: 30.0
+  CHARCOAL: 30.0
+  COAL_BLOCK: 300.0
+  LAVA_BUCKET: 600.0
+  REDSTONE: 20.0
+  REDSTONE_BLOCK: 200.0
+  BATTERY: 450.0
+  HIGH_CAPACITY_BATTERY: 1200.0
+
+solar:
+  recharge_per_second: 2.0
+  requires_direct_sunlight: true
+
+physics:
+  max_climb_step: 1.1
+  gravity_acceleration: 0.35
+  flight_pitch_multiplier: 1.2

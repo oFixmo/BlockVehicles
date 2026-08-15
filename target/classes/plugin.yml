@@ -1,0 +1,16 @@
+name: BlockVehicles
+version: 2.0.0
+main: com.blockvehicles.BlockVehiclesPlugin
+api-version: '1.20'
+author: Assistant
+description: 100 World Vehicles with real scale, display models, drilling, flight, fuel & custom crafting.
+commands:
+  vehicle:
+    description: Main vehicle command
+    aliases: [vehicles, v]
+    permission: blockvehicles.use
+permissions:
+  blockvehicles.use:
+    default: true
+  blockvehicles.admin:
+    default: op
