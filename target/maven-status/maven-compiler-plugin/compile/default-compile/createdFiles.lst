@@ -15,5 +15,7 @@ com/blockvehicles/gui/VehicleCatalogGUI.class
 com/blockvehicles/items/CustomItems.class
 com/blockvehicles/models/VehicleModelBuilder.class
 com/blockvehicles/vehicle/VehicleType.class
+com/blockvehicles/registry/VehicleSpec$DrillMode.class
+com/blockvehicles/physics/VehicleControllerTask$1.class
 com/blockvehicles/physics/VehicleControllerTask.class
 com/blockvehicles/listeners/WorldLootListener.class
