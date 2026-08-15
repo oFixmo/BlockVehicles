@@ -41,58 +41,59 @@ public class VehicleControllerTask extends BukkitRunnable {
             return;
         }
 
-        // 2. Fuel Depletion Check
         if (vehicle.getFuel() <= 0) {
-            driver.sendActionBar(ChatColor.RED + "⚠ Fuel Empty! Shift + Right-Click to refuel.");
+            driver.sendActionBar(ChatColor.RED + "⚠ Tank Empty! Shift + Right-Click to refuel.");
             vehicle.updateModelPositions();
             return;
         }
 
+        Vector driverVelocity = driver.getVelocity();
+        boolean isThrottling = driver.isSprinting() || driverVelocity.lengthSquared() > 0.001 || driver.getLocation().getPitch() != 0;
+
         Vector lookDir = driver.getLocation().getDirection();
         Vector moveVector = new Vector(0, 0, 0);
-        double speed = vehicle.getSpec().getSpeed();
-        double burnRate = vehicle.getSpec().getFuelBurnRate();
 
-        if (vehicle.getSpec().isFlying()) {
-            if (vehicle.getSpec().canHover()) {
-                if (driver.isSneaking()) moveVector.setY(-0.30);
-                else if (driver.getLocation().getPitch() < -15) moveVector.setY(0.30);
+        double gearMultiplier = vehicle.getGearMultiplier();
+        double speed = vehicle.getSpec().getSpeed() * gearMultiplier;
+        double burnRate = vehicle.getSpec().getFuelBurnRate() * (gearMultiplier * 0.9);
+
+        if (vehicle.getSpec() != null) {
+            if (vehicle.getSpec().isFlying()) {
+                if (vehicle.getSpec().canHover()) {
+                    if (driver.isSneaking()) moveVector.setY(-0.30);
+                    else if (driver.getLocation().getPitch() < -15) moveVector.setY(0.30);
+                    Vector horizontal = lookDir.clone().setY(0).normalize().multiply(speed);
+                    moveVector.add(horizontal);
+                } else {
+                    moveVector = lookDir.clone().multiply(speed);
+                }
+            } else {
                 Vector horizontal = lookDir.clone().setY(0).normalize().multiply(speed);
+
+                // Collision Stop
+                Location frontCheck = currentLoc.clone().add(horizontal.clone().normalize().multiply(0.85));
+                Block footBlock = frontCheck.getBlock();
+                Block headBlock = frontCheck.clone().add(0, 1, 0).getBlock();
+
+                if (vehicle.getSpec().canDrill()) {
+                    performExcavation(currentLoc, lookDir, vehicle);
+                }
+
+                if (footBlock.getType().isSolid()) {
+                    if (!headBlock.getType().isSolid() && !frontCheck.clone().add(0, 2, 0).getBlock().getType().isSolid()) {
+                        moveVector.setY(0.42);
+                        moveVector.add(horizontal.multiply(0.7));
+                    } else if (!vehicle.getSpec().canDrill()) {
+                        horizontal.zero();
+                    }
+                } else {
+                    Location below = currentLoc.clone().subtract(0, 0.4, 0);
+                    if (!below.getBlock().getType().isSolid()) {
+                        moveVector.setY(-0.35);
+                    }
+                }
                 moveVector.add(horizontal);
-            } else {
-                moveVector = lookDir.clone().multiply(speed);
             }
-        } else {
-            // Ground Mechanics
-            Vector horizontal = lookDir.clone().setY(0).normalize().multiply(speed);
-
-            // True Solid Collision Detection
-            Location frontCheck = currentLoc.clone().add(horizontal.clone().normalize().multiply(0.85));
-            Block footBlock = frontCheck.getBlock();
-            Block headBlock = frontCheck.clone().add(0, 1, 0).getBlock();
-
-            // Downward Shaft Drilling vs Horizontal
-            if (vehicle.getSpec().canDrill()) {
-                performExcavation(currentLoc, lookDir, vehicle);
-            }
-
-            if (footBlock.getType().isSolid()) {
-                if (!headBlock.getType().isSolid() && !frontCheck.clone().add(0, 2, 0).getBlock().getType().isSolid()) {
-                    // Step up 1 block / slab
-                    moveVector.setY(0.42);
-                    moveVector.add(horizontal.multiply(0.7));
-                } else if (!vehicle.getSpec().canDrill()) {
-                    // Blocked by wall: STOP completely, do not phase through
-                    horizontal.zero();
-                }
-            } else {
-                // Gravity / Slope
-                Location below = currentLoc.clone().subtract(0, 0.4, 0);
-                if (!below.getBlock().getType().isSolid()) {
-                    moveVector.setY(-0.35);
-                }
-            }
-            moveVector.add(horizontal);
         }
 
         Location newLoc = currentLoc.clone().add(moveVector);
@@ -106,42 +107,17 @@ public class VehicleControllerTask extends BukkitRunnable {
 
         int fuelPercent = (int) ((vehicle.getFuel() / vehicle.getSpec().getMaxFuel()) * 100);
         ChatColor color = fuelPercent > 50 ? ChatColor.GREEN : (fuelPercent > 20 ? ChatColor.YELLOW : ChatColor.RED);
-        driver.sendActionBar(ChatColor.GOLD + vehicle.getSpec().getName() + " | Fuel: " + color + fuelPercent + "% " + ChatColor.DARK_GRAY + "(" + String.format("%.0f", vehicle.getFuel()) + ")");
+        String[] gearIcons = {"", "[ECO]", "[CRUISE]", "[SPORT]", "[⚡NITRO]"};
+        driver.sendActionBar(ChatColor.GOLD + vehicle.getSpec().getName() + " " + ChatColor.AQUA + gearIcons[vehicle.getGear()] + " | Fuel: " + color + fuelPercent + "%");
     }
 
     private void performExcavation(Location loc, Vector dir, VehicleInstance vehicle) {
         World world = loc.getWorld();
-        VehicleSpec.DrillMode mode = vehicle.getSpec().getDrillMode();
+        Location targetCenter = loc.clone().add(dir.setY(0).normalize().multiply(1.8));
 
-        int minX = -1, maxX = 1, minY = 0, maxY = 2, minZ = -1, maxZ = 1;
-        Location targetCenter;
-
-        switch (mode) {
-            case SHAFT_DOWN_3X3 -> {
-                targetCenter = loc.clone().subtract(0, 1.0, 0);
-                minX = -1; maxX = 1; minY = -2; maxY = 0; minZ = -1; maxZ = 1;
-            }
-            case SHAFT_DOWN_5X5 -> {
-                targetCenter = loc.clone().subtract(0, 1.0, 0);
-                minX = -2; maxX = 2; minY = -2; maxY = 0; minZ = -2; maxZ = 2;
-            }
-            case COMPACT_2X2 -> {
-                targetCenter = loc.clone().add(dir.setY(0).normalize().multiply(1.5));
-                minX = 0; maxX = 1; minY = 0; maxY = 1; minZ = 0; maxZ = 1;
-            }
-            case MEGA_5X5 -> {
-                targetCenter = loc.clone().add(dir.setY(0).normalize().multiply(2.2));
-                minX = -2; maxX = 2; minY = 0; maxY = 4; minZ = -2; maxZ = 2;
-            }
-            default -> { // TUNNEL_3X3
-                targetCenter = loc.clone().add(dir.setY(0).normalize().multiply(1.8));
-                minX = -1; maxX = 1; minY = 0; maxY = 2; minZ = -1; maxZ = 1;
-            }
-        }
-
-        for (int x = minX; x <= maxX; x++) {
-            for (int y = minY; y <= maxY; y++) {
-                for (int z = minZ; z <= maxZ; z++) {
+        for (int x = -1; x <= 1; x++) {
+            for (int y = 0; y <= 2; y++) {
+                for (int z = -1; z <= 1; z++) {
                     Block block = targetCenter.clone().add(x, y, z).getBlock();
                     Material mat = block.getType();
                     if (mat != Material.AIR && mat != Material.BEDROCK && mat != Material.BARRIER && mat.getHardness() >= 0) {

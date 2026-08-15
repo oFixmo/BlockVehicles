@@ -5,6 +5,7 @@ import org.bukkit.Material;
 
 public enum VehicleCategory {
     SUPERCAR("Supercars & Hypercars", Material.REDSTONE_BLOCK, ChatColor.RED),
+    MOTORCYCLE("Bikes & Motorcycles", Material.CHAIN, ChatColor.GOLD),
     CIVILIAN_CAR("Everyday & Classic Cars", Material.IRON_BLOCK, ChatColor.WHITE),
     TRUCK_SUV("Trucks, Pickups & SUVs", Material.COPPER_BLOCK, ChatColor.GOLD),
     SEMI_HEAVY("Semi-Trucks & Heavy Haulers", Material.NETHERITE_BLOCK, ChatColor.DARK_GRAY),
@@ -21,11 +22,8 @@ public enum VehicleCategory {
     private final ChatColor color;
 
     VehicleCategory(String title, Material icon, ChatColor color) {
-        this.title = title;
-        this.icon = icon;
-        this.color = color;
+        this.title = title; this.icon = icon; this.color = color;
     }
-
     public String getTitle() { return title; }
     public Material getIcon() { return icon; }
     public ChatColor getColor() { return color; }

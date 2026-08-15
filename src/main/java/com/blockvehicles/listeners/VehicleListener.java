@@ -9,6 +9,7 @@ import com.blockvehicles.registry.VehicleSpec;
 import com.blockvehicles.vehicle.VehicleInstance;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -43,7 +44,27 @@ public class VehicleListener implements Listener {
 
         plugin.getVehicleManager().spawnVehicle(event.getClickedBlock().getLocation().add(0.5, 0.2, 0.5), spec, event.getPlayer().getUniqueId());
         item.setAmount(item.getAmount() - 1);
-        event.getPlayer().sendMessage(ChatColor.GREEN + "Deployed " + spec.getName() + "! Right-Click to drive.");
+        event.getPlayer().sendMessage(ChatColor.GREEN + "Deployed " + spec.getName() + "!");
+    }
+
+    @EventHandler
+    public void onSpeedControllerUse(PlayerInteractEvent event) {
+        if (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+        ItemStack hand = event.getItem();
+        if (hand == null || !hand.hasItemMeta()) return;
+
+        String customId = hand.getItemMeta().getPersistentDataContainer().get(plugin.getCustomItemRegistry().ITEM_ID_KEY, PersistentDataType.STRING);
+        if ("SPEED_CONTROLLER".equals(customId)) {
+            event.setCancelled(true);
+            Player player = event.getPlayer();
+            for (VehicleInstance v : plugin.getVehicleManager().getActiveVehicles()) {
+                if (v.getSeatEntity().getPassengers().contains(player)) {
+                    v.cycleGear(player);
+                    return;
+                }
+            }
+            player.sendMessage(ChatColor.YELLOW + "Right-click while riding a vehicle to shift gears!");
+        }
     }
 
     @EventHandler
@@ -85,13 +106,12 @@ public class VehicleListener implements Listener {
         Player player = (Player) event.getWhoClicked();
         int slot = event.getRawSlot();
 
-        // 1. Showroom Catalog GUI Click
         if (title.startsWith(VehicleCatalogGUI.CATALOG_TITLE)) {
             event.setCancelled(true);
             if (slot >= 45 && slot <= 51) {
                 VehicleCategory cat = switch (slot) {
                     case 46 -> VehicleCategory.SUPERCAR;
-                    case 47 -> VehicleCategory.CIVILIAN_CAR;
+                    case 47 -> VehicleCategory.MOTORCYCLE;
                     case 48 -> VehicleCategory.TRUCK_SUV;
                     case 49 -> VehicleCategory.CONSTRUCTION;
                     case 50 -> VehicleCategory.MILITARY;
@@ -109,7 +129,6 @@ public class VehicleListener implements Listener {
             return;
         }
 
-        // 2. Control Dashboard GUI Click
         if (title.equals(VehicleGUI.DASHBOARD_TITLE)) {
             event.setCancelled(true);
             VehicleInstance vehicle = plugin.getVehicleManager().getActiveVehicles().stream()
@@ -132,15 +151,18 @@ public class VehicleListener implements Listener {
                     }
                 }
             } else if (slot == 15) {
+                vehicle.cycleGear(player);
+                VehicleGUI.openDashboard(player, vehicle);
+            } else if (slot == 21) {
                 if (vehicle.getOwnerUUID().equals(player.getUniqueId())) {
                     vehicle.setLocked(!vehicle.isLocked());
                     VehicleGUI.openDashboard(player, vehicle);
                 }
-            } else if (slot == 26) {
+            } else if (slot == 23) {
                 plugin.getVehicleManager().removeVehicle(vehicle.getId());
                 player.getInventory().addItem(plugin.getCustomItemRegistry().createVehicleKey(vehicle.getSpec()));
                 player.closeInventory();
-                player.sendMessage(ChatColor.YELLOW + "Vehicle dismantled and retrieved.");
+                player.sendMessage(ChatColor.YELLOW + "Vehicle retrieved.");
             }
         }
     }

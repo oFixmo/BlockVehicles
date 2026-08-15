@@ -22,16 +22,16 @@ public class VehicleInstance {
     private final List<BlockDisplay> modelParts;
     private final Inventory trunk;
     private double fuel;
+    private int gear = 3; // Default: Sport (100%)
     private boolean locked = false;
 
     public VehicleInstance(BlockVehiclesPlugin plugin, Location spawnLoc, VehicleSpec spec, UUID ownerUUID) {
         this.id = UUID.randomUUID();
         this.spec = spec;
         this.ownerUUID = ownerUUID;
-        this.fuel = spec.getMaxFuel() * 0.5; // Starts half full
+        this.fuel = spec.getMaxFuel() * 0.5;
         this.trunk = Bukkit.createInventory(null, spec.getStorageRows() * 9, spec.getName() + " Cargo");
 
-        // Spawn Solid Clickable Seat
         this.seatEntity = (ArmorStand) spawnLoc.getWorld().spawnEntity(spawnLoc, EntityType.ARMOR_STAND);
         this.seatEntity.setVisible(false);
         this.seatEntity.setGravity(false);
@@ -39,7 +39,6 @@ public class VehicleInstance {
         this.seatEntity.setCustomName(spec.getName());
         this.seatEntity.setCustomNameVisible(false);
 
-        // Build Realistic Multi-part Display Model
         this.modelParts = ProceduralVehicleModelBuilder.buildModel(spawnLoc.getWorld(), spawnLoc, spec);
     }
 
@@ -51,6 +50,26 @@ public class VehicleInstance {
             }
         }
     }
+
+    public void cycleGear(Player player) {
+        gear++;
+        if (gear > 4) gear = 1;
+        String[] gearNames = {"", "ECO (30%)", "CRUISE (60%)", "SPORT (100%)", "NITRO OVERDRIVE (160%)"};
+        org.bukkit.ChatColor[] gearColors = {org.bukkit.ChatColor.WHITE, org.bukkit.ChatColor.GREEN, org.bukkit.ChatColor.AQUA, org.bukkit.ChatColor.GOLD, org.bukkit.ChatColor.RED};
+        player.sendTitle("", gearColors[gear] + "⚡ Shifted to " + gearNames[gear], 5, 20, 5);
+        player.playSound(player.getLocation(), org.bukkit.Sound.BLOCK_NOTE_BLOCK_BELL, 0.7f, 1.5f + (gear * 0.2f));
+    }
+
+    public double getGearMultiplier() {
+        return switch (gear) {
+            case 1 -> 0.30;
+            case 2 -> 0.60;
+            case 4 -> 1.60;
+            default -> 1.00;
+        };
+    }
+
+    public int getGear() { return gear; }
 
     public void remove() {
         if (seatEntity != null && !seatEntity.isDead()) seatEntity.remove();

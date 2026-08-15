@@ -7,7 +7,6 @@ com/blockvehicles/models/ProceduralVehicleModelBuilder.class
 com/blockvehicles/registry/VehicleSpec.class
 com/blockvehicles/listeners/VehicleListener.class
 com/blockvehicles/gui/VehicleGUI.class
-com/blockvehicles/models/ProceduralVehicleModelBuilder$1.class
 com/blockvehicles/registry/VehicleRegistry.class
 com/blockvehicles/registry/VehicleCategory.class
 com/blockvehicles/items/CustomItemRegistry.class
@@ -16,6 +15,5 @@ com/blockvehicles/items/CustomItems.class
 com/blockvehicles/models/VehicleModelBuilder.class
 com/blockvehicles/vehicle/VehicleType.class
 com/blockvehicles/registry/VehicleSpec$DrillMode.class
-com/blockvehicles/physics/VehicleControllerTask$1.class
 com/blockvehicles/physics/VehicleControllerTask.class
 com/blockvehicles/listeners/WorldLootListener.class
