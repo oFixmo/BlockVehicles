@@ -1,3 +1,4 @@
+cat << 'INNER_EOF' > src/main/java/com/blockvehicles/commands/VehicleCommand.java
 package com.blockvehicles.commands;
 
 import com.blockvehicles.BlockVehiclesPlugin;
@@ -79,3 +80,15 @@ public class VehicleCommand implements CommandExecutor {
         return true;
     }
 }
+INNER_EOF
+
+# Compile
+mvn clean package
+
+# Update repository
+cp target/BlockVehicles-2.0.0.jar ./BlockVehicles.jar
+git add .
+git commit -m "Successfully compile BlockVehicles 2.0.0"
+git push
+
+echo "=== SUCCESS: BlockVehicles.jar compiled and pushed to GitHub! ==="
