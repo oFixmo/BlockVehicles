@@ -12,6 +12,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class VehicleCommand implements CommandExecutor {
     private final BlockVehiclesPlugin plugin;
 
@@ -21,35 +24,30 @@ public class VehicleCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (args.length == 0) {
+        List<String> argList = Arrays.asList(args);
+
+        if (argList.isEmpty() || argList.get(0).equalsIgnoreCase("menu") || argList.get(0).equalsIgnoreCase("catalog")) {
             if (sender instanceof Player player) {
                 VehicleCatalogGUI.openCatalog(player, null, 0);
             } else {
-                sender.sendMessage(ChatColor.GOLD + "BlockVehicles 2.0 | Total Vehicles: " + VehicleRegistry.getAll().size());
+                sender.sendMessage(ChatColor.GOLD + "BlockVehicles 2.0 | Total: " + VehicleRegistry.getAll().size() + " vehicles");
             }
             return true;
         }
 
-        if (args[0].equalsIgnoreCase("menu") || args[0].equalsIgnoreCase("catalog") || args[0].equalsIgnoreCase("gui")) {
-            if (sender instanceof Player player) {
-                VehicleCatalogGUI.openCatalog(player, null, 0);
-            }
-            return true;
-        }
-
-        if (args[0].equalsIgnoreCase("give") && sender.hasPermission("blockvehicles.admin")) {
-            if (args.length < 3) {
+        if (argList.get(0).equalsIgnoreCase("give") && sender.hasPermission("blockvehicles.admin")) {
+            if (argList.size() < 3) {
                 sender.sendMessage(ChatColor.RED + "Usage: /vehicle give <player> <specId>");
                 return true;
             }
-            String playerName = args;
-            Player target = Bukkit.getPlayer(playerName);
+            String targetName = argList.get(1);
+            Player target = Bukkit.getPlayer(targetName);
             if (target == null) {
                 sender.sendMessage(ChatColor.RED + "Player not found!");
                 return true;
             }
-            String specName = args[2].toUpperCase();
-            VehicleSpec spec = VehicleRegistry.get(specName);
+            String specId = argList.get(2).toUpperCase();
+            VehicleSpec spec = VehicleRegistry.get(specId);
             if (spec == null) {
                 sender.sendMessage(ChatColor.RED + "Invalid vehicle! Use /vehicle menu to browse.");
                 return true;
@@ -60,18 +58,18 @@ public class VehicleCommand implements CommandExecutor {
             return true;
         }
 
-        if (args[0].equalsIgnoreCase("item") && sender instanceof Player player && player.hasPermission("blockvehicles.admin")) {
-            if (args.length < 2) {
+        if (argList.get(0).equalsIgnoreCase("item") && sender instanceof Player player && player.hasPermission("blockvehicles.admin")) {
+            if (argList.size() < 2) {
                 player.sendMessage(ChatColor.RED + "Usage: /vehicle item <itemId>");
                 return true;
             }
-            String itemId = args.toUpperCase();
+            String itemId = argList.get(1).toUpperCase();
             ItemStack item = plugin.getCustomItemRegistry().getItem(itemId);
             if (item != null) {
                 player.getInventory().addItem(item);
                 player.sendMessage(ChatColor.GREEN + "Given " + item.getItemMeta().getDisplayName());
             } else {
-                player.sendMessage(ChatColor.RED + "Item ID not found.");
+                player.sendMessage(ChatColor.RED + "Item not found.");
             }
             return true;
         }
