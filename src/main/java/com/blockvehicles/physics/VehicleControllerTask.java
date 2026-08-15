@@ -11,9 +11,13 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public class VehicleControllerTask extends BukkitRunnable {
     private final BlockVehiclesPlugin plugin;
+    private final Map<UUID, Location> lastLocations = new HashMap<>();
 
     public VehicleControllerTask(BlockVehiclesPlugin plugin) {
         this.plugin = plugin;
@@ -36,19 +40,36 @@ public class VehicleControllerTask extends BukkitRunnable {
             vehicle.setFuel(vehicle.getFuel() + solarRate);
         }
 
+        // Animate Spinning Rotors on Helicopters
+        if (vehicle.getSpec().isFlying() && vehicle.getSpec().canHover()) {
+            vehicle.spinRotor();
+        }
+
         if (driver == null) {
+            lastLocations.remove(vehicle.getId());
             vehicle.updateModelPositions();
             return;
         }
 
         if (vehicle.getFuel() <= 0) {
-            driver.sendActionBar(ChatColor.RED + "⚠ Tank Empty! Shift + Right-Click to refuel.");
+            driver.sendActionBar(ChatColor.RED + "⚠ Fuel Empty! Shift + Right-Click to refuel.");
             vehicle.updateModelPositions();
             return;
         }
 
-        Vector driverVelocity = driver.getVelocity();
-        boolean isThrottling = driver.isSprinting() || driverVelocity.lengthSquared() > 0.001 || driver.getLocation().getPitch() != 0;
+        // --- RELIABLE W-KEY THROTTLE DETECTION (NO IDLE GHOST MOVEMENT) ---
+        // Player moves forward when sprinting or pressing forward
+        boolean isForwardPressed = driver.isSprinting() || driver.isSneaking();
+        
+        // Check if player changed eye pitch or moved relative to previous frame
+        Location prev = lastLocations.get(driver.getUniqueId());
+        if (prev != null) {
+            double delta = driver.getLocation().distanceSquared(prev);
+            if (delta > 0.0001) {
+                isForwardPressed = true;
+            }
+        }
+        lastLocations.put(driver.getUniqueId(), driver.getLocation());
 
         Vector lookDir = driver.getLocation().getDirection();
         Vector moveVector = new Vector(0, 0, 0);
@@ -57,17 +78,37 @@ public class VehicleControllerTask extends BukkitRunnable {
         double speed = vehicle.getSpec().getSpeed() * gearMultiplier;
         double burnRate = vehicle.getSpec().getFuelBurnRate() * (gearMultiplier * 0.9);
 
-        if (vehicle.getSpec() != null) {
-            if (vehicle.getSpec().isFlying()) {
-                if (vehicle.getSpec().canHover()) {
-                    if (driver.isSneaking()) moveVector.setY(-0.30);
-                    else if (driver.getLocation().getPitch() < -15) moveVector.setY(0.30);
+        if (vehicle.getSpec().isFlying()) {
+            if (vehicle.getSpec().canHover()) {
+                // Helicopter Flight Mechanics
+                if (driver.isSneaking()) {
+                    // Descend to land
+                    moveVector.setY(-0.30);
+                } else if (driver.getLocation().getPitch() < -20) {
+                    // Ascend into the sky
+                    moveVector.setY(0.30);
+                }
+
+                // Horizontal movement ONLY when pressing W
+                if (isForwardPressed) {
                     Vector horizontal = lookDir.clone().setY(0).normalize().multiply(speed);
                     moveVector.add(horizontal);
-                } else {
-                    moveVector = lookDir.clone().multiply(speed);
+                }
+
+                // Rotor wash wind particles on ground
+                Location groundCheck = currentLoc.clone().subtract(0, 3.0, 0);
+                if (groundCheck.getBlock().getType().isSolid()) {
+                    currentLoc.getWorld().spawnParticle(Particle.CLOUD, groundCheck.add(0, 1.1, 0), 4, 1.2, 0.1, 1.2, 0.02);
                 }
             } else {
+                // Airplane Mechanics
+                if (isForwardPressed) {
+                    moveVector = lookDir.clone().multiply(speed);
+                }
+            }
+        } else {
+            // Ground Mechanics (Cars, Bikes, Tractors, Drills)
+            if (isForwardPressed) {
                 Vector horizontal = lookDir.clone().setY(0).normalize().multiply(speed);
 
                 // Collision Stop
@@ -93,6 +134,12 @@ public class VehicleControllerTask extends BukkitRunnable {
                     }
                 }
                 moveVector.add(horizontal);
+            } else {
+                // Completely stopped when idle!
+                Location below = currentLoc.clone().subtract(0, 0.4, 0);
+                if (!below.getBlock().getType().isSolid()) {
+                    moveVector.setY(-0.35);
+                }
             }
         }
 
@@ -103,7 +150,9 @@ public class VehicleControllerTask extends BukkitRunnable {
         vehicle.getSeatEntity().teleport(newLoc);
         vehicle.updateModelPositions();
 
-        vehicle.setFuel(vehicle.getFuel() - burnRate);
+        if (isForwardPressed) {
+            vehicle.setFuel(vehicle.getFuel() - burnRate);
+        }
 
         int fuelPercent = (int) ((vehicle.getFuel() / vehicle.getSpec().getMaxFuel()) * 100);
         ChatColor color = fuelPercent > 50 ? ChatColor.GREEN : (fuelPercent > 20 ? ChatColor.YELLOW : ChatColor.RED);

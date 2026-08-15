@@ -10,6 +10,9 @@ import org.bukkit.entity.BlockDisplay;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.util.Transformation;
+import org.joml.AxisAngle4f;
+import org.joml.Vector3f;
 
 import java.util.List;
 import java.util.UUID;
@@ -20,10 +23,12 @@ public class VehicleInstance {
     private final UUID ownerUUID;
     private final ArmorStand seatEntity;
     private final List<BlockDisplay> modelParts;
+    private BlockDisplay rotorPart = null;
     private final Inventory trunk;
     private double fuel;
-    private int gear = 3; // Default: Sport (100%)
+    private int gear = 3;
     private boolean locked = false;
+    private float rotorAngle = 0.0f;
 
     public VehicleInstance(BlockVehiclesPlugin plugin, Location spawnLoc, VehicleSpec spec, UUID ownerUUID) {
         this.id = UUID.randomUUID();
@@ -40,6 +45,10 @@ public class VehicleInstance {
         this.seatEntity.setCustomNameVisible(false);
 
         this.modelParts = ProceduralVehicleModelBuilder.buildModel(spawnLoc.getWorld(), spawnLoc, spec);
+
+        if (spec.isFlying() && spec.canHover() && modelParts.size() >= 2) {
+            this.rotorPart = modelParts.get(modelParts.size() - 1);
+        }
     }
 
     public void updateModelPositions() {
@@ -48,6 +57,22 @@ public class VehicleInstance {
             if (part != null && !part.isDead()) {
                 part.teleport(seatLoc);
             }
+        }
+    }
+
+    public void spinRotor() {
+        if (rotorPart != null && !rotorPart.isDead()) {
+            rotorAngle += 0.65f;
+            if (rotorAngle > 6.28f) rotorAngle = 0.0f;
+            float w = spec.getWidth();
+            float h = spec.getHeight();
+            rotorPart.setTransformation(new Transformation(
+                    new Vector3f(0.0f, h + 0.4f, 0.0f),
+                    new AxisAngle4f(rotorAngle, 0.0f, 1.0f, 0.0f),
+                    new Vector3f(w * 2.2f, 0.08f, 0.4f),
+                    new AxisAngle4f(0.0f, 0.0f, 0.0f, 1.0f)
+            ));
+            rotorPart.setInterpolationDuration(1);
         }
     }
 
