@@ -16,3 +16,4 @@ com/blockvehicles/items/CustomItems.class
 com/blockvehicles/models/VehicleModelBuilder.class
 com/blockvehicles/vehicle/VehicleType.class
 com/blockvehicles/physics/VehicleControllerTask.class
+com/blockvehicles/listeners/WorldLootListener.class

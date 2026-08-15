@@ -3,6 +3,7 @@ package com.blockvehicles;
 import com.blockvehicles.commands.VehicleCommand;
 import com.blockvehicles.items.CustomItemRegistry;
 import com.blockvehicles.listeners.VehicleListener;
+import com.blockvehicles.listeners.WorldLootListener;
 import com.blockvehicles.physics.VehicleControllerTask;
 import com.blockvehicles.vehicle.VehicleManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -24,12 +25,14 @@ public final class BlockVehiclesPlugin extends JavaPlugin {
         this.vehicleManager = new VehicleManager(this);
 
         getServer().getPluginManager().registerEvents(new VehicleListener(this), this);
+        getServer().getPluginManager().registerEvents(new WorldLootListener(this), this);
+
         getCommand("vehicle").setExecutor(new VehicleCommand(this));
 
         this.controllerTask = new VehicleControllerTask(this);
         this.controllerTask.runTaskTimer(this, 1L, 1L);
 
-        getLogger().info("BlockVehicles 2.0 initialized with 100 World Vehicles!");
+        getLogger().info("BlockVehicles 2.0 initialized with 100 World Vehicles and Loot Drops!");
     }
 
     @Override

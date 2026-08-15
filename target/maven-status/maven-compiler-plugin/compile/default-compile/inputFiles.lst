@@ -5,6 +5,7 @@
 /workspaces/BlockVehicles/src/main/java/com/blockvehicles/items/CustomItemRegistry.java
 /workspaces/BlockVehicles/src/main/java/com/blockvehicles/items/CustomItems.java
 /workspaces/BlockVehicles/src/main/java/com/blockvehicles/listeners/VehicleListener.java
+/workspaces/BlockVehicles/src/main/java/com/blockvehicles/listeners/WorldLootListener.java
 /workspaces/BlockVehicles/src/main/java/com/blockvehicles/models/ProceduralVehicleModelBuilder.java
 /workspaces/BlockVehicles/src/main/java/com/blockvehicles/models/VehicleModelBuilder.java
 /workspaces/BlockVehicles/src/main/java/com/blockvehicles/physics/VehicleControllerTask.java
