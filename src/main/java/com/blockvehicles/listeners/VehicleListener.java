@@ -8,8 +8,8 @@ import com.blockvehicles.registry.VehicleRegistry;
 import com.blockvehicles.registry.VehicleSpec;
 import com.blockvehicles.vehicle.VehicleInstance;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -31,7 +31,7 @@ public class VehicleListener implements Listener {
 
     @EventHandler
     public void onDeployVehicle(PlayerInteractEvent event) {
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK || event.getClickedBlock() == null) return;
         ItemStack item = event.getItem();
         if (item == null || !item.hasItemMeta()) return;
 
@@ -42,9 +42,13 @@ public class VehicleListener implements Listener {
         VehicleSpec spec = VehicleRegistry.get(specId);
         if (spec == null) return;
 
-        plugin.getVehicleManager().spawnVehicle(event.getClickedBlock().getLocation().add(0.5, 0.2, 0.5), spec, event.getPlayer().getUniqueId());
+        // Spawn exactly on top of the clicked block face
+        Location spawnLoc = event.getClickedBlock().getRelative(event.getBlockFace()).getLocation().add(0.5, 0.05, 0.5);
+        spawnLoc.setYaw(event.getPlayer().getLocation().getYaw());
+
+        plugin.getVehicleManager().spawnVehicle(spawnLoc, spec, event.getPlayer().getUniqueId());
         item.setAmount(item.getAmount() - 1);
-        event.getPlayer().sendMessage(ChatColor.GREEN + "Deployed " + spec.getName() + "!");
+        event.getPlayer().sendMessage(ChatColor.GREEN + "Deployed " + spec.getName() + " on surface!");
     }
 
     @EventHandler
